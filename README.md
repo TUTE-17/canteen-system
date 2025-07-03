@@ -42,7 +42,7 @@ Built with passion and collaboration by beginner developers from Velammal Engine
 > **TUTE** — *Try Until The End*
 
 Core Team:
-- Agaran (Project Lead)
+- Agaran 
 - Prabu Rao
 - Nithyanantham
 - Prithiyanga
@@ -76,7 +76,7 @@ This project is open to contributions from the team. Once we complete the basics
 ## 📬 Contact
 
 For queries or suggestions:  
-📧 tute.team@gmail.com (placeholder)
+📧 tute11726@gmail.com
 
 ---
 
