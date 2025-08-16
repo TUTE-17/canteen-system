@@ -7,7 +7,7 @@ togglePassword.addEventListener("click", () => {
     togglePassword.textContent = "🙈"; 
   } else { 
     passwordField.type = "password"; 
-    togglePassword.textContent = "👁"; 
+    togglePassword.textContent = "👁️"; 
   } 
 }); 
  
@@ -19,10 +19,8 @@ togglePassword.addEventListener("click", () => {
     successMessage.style.display = 'block'; 
 }); 
 function login() { 
-  // Optional: validate username/password before redirecting 
-  // For now, just redirect to success page 
  
-  window.location.href = 'index1.html'; 
+  window.location.href = '/dishes/admin'; 
  
   document.getElementById('successPopup').style.display = 'block'; 
   document.getElementById('popupOverlay').style.display = 'block'; 

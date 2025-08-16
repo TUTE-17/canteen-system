@@ -1,6 +1,6 @@
 import jwt
 import datetime
-from config import config
+import config
 from flask import request,jsonify
 from functools import wraps
 

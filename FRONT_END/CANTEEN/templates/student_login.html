@@ -16,7 +16,7 @@ rel="stylesheet">
     } 
  
     body { 
-   background: url("../assets/student_login.jpg") no-repeat center center; 
+   background: url("../static/assets/student_login.jpg") no-repeat center center; 
     background-size: cover; 
     background-position: center; 
     background-attachment: fixed; 
@@ -259,7 +259,39 @@ filter: brightness(1.1);
 .login-box button:active { 
 transform: scale(0.98); 
 } 
- 
+
+.forgot-link {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.forgot-link a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.forgot-link a:hover {
+    text-decoration: underline;
+}
+
+.links-row {
+    margin-top: 10px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.links-row a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.links-row a:hover {
+    text-decoration: underline;
+}
+
     </style> 
 </head> 
 <body> 
@@ -267,26 +299,23 @@ transform: scale(0.98);
 <h2 class="typing-text">STUDENT LOGIN PAGE🔐 
  
  </h2> 
-<form> 
-    <label>Email/Register Number</label> 
-    <input type="text" placeholder="Enter your email or reg no" required 
-/> 
- 
-    <label>Password</label> 
-    <div class="password-box"> 
-    <input type="password" id="password" placeholder="Enter password" 
-required /> 
-    <span onclick="togglePassword()">
- 
- </span> 
-    </div> 
- 
-    <div class="signup-link"> 
-New User? <a href="#">Sign Up</a> 
-</div> 
-<button onclick="login()">LOGIN</button> 
-</form> 
-</div> 
-<script src='../js/student_login.js'></script> 
+<form action="/student/" method="POST">
+    <label>Email/Register Number</label>
+    <input type="text" id="identifier" name="identifier" placeholder="Enter your email or reg no" required />
+    <label>Password</label>
+    <div class="password-box">
+        <input type="password" name="password" id="password" placeholder="Enter password" required />
+        <span onclick="togglePassword()">🔍</span>
+    
+    </div>
+
+    <div class="links-row">
+    <span>New User? <a href="/student/signup">Sign Up</a></span>
+    <a href="/student/forgot-password">Forgot Password?</a>
+</div>
+    <button type="submit">LOGIN</button>
+</form>
+
+<script src='../static/js/student_login.js'></script> 
 </body> 
 </html>

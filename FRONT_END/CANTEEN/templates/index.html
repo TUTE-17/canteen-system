@@ -34,7 +34,7 @@
     }
 
     .custom-body-bg {
-      background-image: url('assets/get_started.jpg');
+      background-image: url('/static/assets/get_started.jpg');
       background-size: cover;
       background-position: center;
     }
@@ -50,7 +50,7 @@
 
       <!-- Student Button -->
       <button id="studentBtn" class="flex items-center gap-2 bg-black text-white hover:bg-gray-800 px-4 py-3 rounded-full w-full justify-center mb-4 font-semibold shadow-md hover:shadow-lg transition duration-300">
-        🎓 STUDENT 🧑‍🎓
+        🎓 STUDENT 🧑
       </button>
 
       <!-- Staff Button -->
@@ -61,20 +61,18 @@
 
     <!-- Right Side Image -->
     <div class="bg-white p-4 rounded-xl shadow w-1/2 flex items-center justify-center">
-      <img src="../CANTEEN/assets/chef.jpg" alt="Chef" class="w-70" />
+      <img src="/static/assets/chef.jpg" alt="Chef" class="w-70" />
     </div>
   </div>
 
   <!-- JavaScript -->
   <script>
     document.getElementById("studentBtn").addEventListener("click", () => {
-      alert("Redirecting to Student Login Page...");
-      // window.location.href = "student-login.html";
+      window.location.href = "/student/login";
     });
 
     document.getElementById("staffBtn").addEventListener("click", () => {
-      alert("Redirecting to Staff Login Page...");
-      // window.location.href = "staff-login.html";
+      window.location.href = "/staff/login";
     });
   </script>
 </body>

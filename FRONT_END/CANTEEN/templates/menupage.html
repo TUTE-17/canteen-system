@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Table</title>
+<style>
+    body {
+        background: url('../static/assets/menupage.jpeg') no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    table {
+        width: 70%;
+        margin: 30px auto;
+        border-collapse: collapse;
+        font-size: 14px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    thead th {
+        background-color: #111;
+        color: #fff;
+        padding: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f4f4f4;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #fff;
+    }
+
+    td {
+        text-align: center;
+        padding: 6px;
+        vertical-align: middle;
+        border: 1px solid #ddd;
+    }
+
+    td img {
+        border-radius: 50%;
+        object-fit: cover;
+        width: 40px;
+        height: 40px;
+    }
+
+    .name-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .change-btn {
+        padding: 4px 10px;
+        background-color: #FF7F50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .change-btn:hover {
+        background-color: #FF4500;
+    }
+
+    .popup {
+        display: none;
+        position: absolute;
+        top: 55px;
+        left: 0;
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 10px;
+        z-index: 1000;
+        width: 250px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        border-radius: 8px;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    ul li {
+        margin: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9em;
+    }
+
+    ul li img {
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    .qty-btn {
+        padding: 2px 6px;
+        margin: 0 4px;
+        background-color: #1E90FF;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .qty-btn:hover {
+        background-color: #104E8B;
+    }
+
+    .total-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .total-label {
+        font-size: 1.4em;
+        font-weight: bold;
+        color:whitesmoke;
+    }
+
+    .total-container button {
+        padding: 6px 18px;
+        margin-top: 8px;
+        font-size: 1em;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+        background: #32CD32;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .total-container button:hover {
+        background: #228B22;
+    }
+</style>
+</head>
+<body>
+
+<table id="menuTable">
+    <thead>
+        <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Rows added dynamically -->
+    </tbody>
+</table>
+
+<div class="total-container">
+    <div class="total-label">Total: ₹<span id="totalPrice">0</span></div>
+    <button onclick="proceedToPay()">Proceed to Pay</button>
+</div>
+
+<script>
+let total = 0;
+let allDishes = [];
+let selectedDishes = []; // store IDs of selected dishes
+
+// Fetch dishes from backend
+async function fetchDishes() {
+    try {
+        const res = await fetch('/dishes/');
+        allDishes = await res.json();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Toggle popup
+function togglePopup(button) {
+    const popup = button.parentElement.querySelector('.popup');
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    renderDishList(popup);
+}
+
+// Render popup excluding already selected dishes
+function renderDishList(popup) {
+    const ul = popup.querySelector('.dishList');
+    ul.innerHTML = '';
+    allDishes.forEach(dish => {
+        if (selectedDishes.includes(dish.id)) return; // skip selected
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div style="display:flex; align-items:center; gap:5px;">
+                <img src="${dish.photo}" width="40" height="40">
+                <span>${dish.dishname} - ₹${dish.price}</span>
+            </div>
+            <button class="select-dish" data-id="${dish.id}" data-name="${dish.dishname}" data-photo="${dish.photo}" data-price="${dish.price}">Select</button>
+        `;
+        ul.appendChild(li);
+    });
+
+    ul.querySelectorAll('.select-dish').forEach(btn => {
+        btn.addEventListener('click', () => selectDish(btn));
+    });
+}
+
+// Select dish
+function selectDish(btn) {
+    const td = btn.closest('td');
+    const tr = btn.closest('tr');
+
+    const dishId = btn.dataset.id;
+    const name = btn.dataset.name;
+    const photo = btn.dataset.photo;
+    const price = Number(btn.dataset.price);
+
+    // Add to selected dishes
+    selectedDishes.push(dishId);
+
+    tr.querySelector('.photo').innerHTML = `<img src="${photo}">`;
+    tr.querySelector('.dish-name').innerText = name;
+    tr.querySelector('.qty').innerHTML = `
+        <button class="qty-btn">-</button>
+        <span>1</span>
+        <button class="qty-btn">+</button>
+    `;
+    tr.querySelector('.price').innerText = price;
+
+    const qtyBtns = tr.querySelectorAll('.qty-btn');
+    qtyBtns[0].onclick = () => updateQty(tr, -1, price);
+    qtyBtns[1].onclick = () => updateQty(tr, 1, price);
+
+    td.querySelector('.popup').style.display = 'none';
+    updateTotal();
+
+    const tbody = document.getElementById('menuTable').querySelector('tbody');
+    if (tbody.lastElementChild === tr) addEmptyRow();
+}
+
+// Update quantity and row price
+function updateQty(tr, change, price) {
+    const span = tr.querySelector('.qty span');
+    let qty = parseInt(span.innerText) + change;
+    if (qty < 1) return;
+    span.innerText = qty;
+    tr.querySelector('.price').innerText = price * qty;
+    updateTotal();
+}
+
+// Calculate total
+function updateTotal() {
+    let totalPrice = 0;
+    document.querySelectorAll('#menuTable tbody tr').forEach(tr => {
+        const priceCell = tr.querySelector('.price');
+        if (priceCell && priceCell.innerText) totalPrice += Number(priceCell.innerText);
+    });
+    total = totalPrice;
+    document.getElementById('totalPrice').innerText = total;
+}
+
+// Add empty row
+function addEmptyRow() {
+    const tbody = document.getElementById('menuTable').querySelector('tbody');
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td class="photo"></td>
+        <td class="name-cell">
+            <span class="dish-name"></span>
+            <button class="change-btn">Add</button>
+            <div class="popup">
+                <h4>Select a Dish</h4>
+                <ul class="dishList"></ul>
+            </div>
+        </td>
+        <td class="qty"></td>
+        <td class="price"></td>
+    `;
+    row.querySelector('.change-btn').addEventListener('click', e => togglePopup(e.target));
+}
+
+// Proceed to pay
+function proceedToPay() {
+    alert("Proceeding to Payment. Total: ₹" + total);
+}
+
+// Initialize
+window.onload = async () => {
+    await fetchDishes();
+    addEmptyRow();
+};
+</script>
+
+</body>
+</html>

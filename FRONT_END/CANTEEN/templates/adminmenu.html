@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Menu</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin:0; padding:20px;
+    background: url('../static/assets/menupage1.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+.container {
+    max-width:900px; margin:auto;
+    background: rgba(255,255,255,0.95);
+    padding:20px; border-radius:10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+h1,h2 { text-align:center; color:#222; }
+table { 
+    width:100%; border-collapse:collapse; margin-bottom:20px; 
+    border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.2); 
+    background:#111; color:#fff;
+}
+th,td { padding:12px; text-align:center; border-bottom:1px solid #444;}
+th { background:#222; color:#ffcc00;}
+td img { width:50px; height:50px; object-fit:cover; border-radius:50%;}
+input[type="number"] { width:70px; padding:4px; text-align:center; border-radius:4px; border:1px solid #ccc;}
+button { padding:6px 12px; border:none; border-radius:5px; cursor:pointer;}
+button.add-btn { background:#4CAF50; color:white;}
+button.delete-btn { background:#f44336; color:white;}
+button.view-orders { background:#9C27B0; color:white; margin-top:10px;}
+form { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;}
+input[type="text"], input[type="file"] { padding:8px; border:1px solid #ccc; border-radius:4px;}
+label { display:block; font-weight:bold; margin-top:5px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Staff Menu</h1>
+
+<table>
+<thead>
+<tr>
+<th>Photo</th>
+<th>Name</th>
+<th>Price & Quantity</th>
+<th>Show in Menu</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="menuBody"></tbody>
+</table>
+
+<h2>Add New Dish</h2>
+<form id="addDishForm">
+<label for="newPhoto">Dish Photo:</label>
+<input type="file" id="newPhoto" name="photo" accept="image/*" required>
+
+<label for="newName">Dish Name:</label>
+<input type="text" id="newName" name="dishname" placeholder="Enter dish name" required>
+
+<label for="newRate">Price (₹):</label>
+<input type="number" id="newRate" name="price" placeholder="Enter price" required>
+
+<label for="newQuantity">Quantity:</label>
+<input type="number" id="newQuantity" name="quantity" placeholder="Enter quantity" required>
+
+<label>
+  <input type="checkbox" id="newAvailable" name="available"> Show in Student Menu
+</label>
+
+<button type="submit" class="add-btn">Add Dish</button>
+</form>
+
+<button class="view-orders" onclick="viewOrders()">View Orders</button>
+<div id="ordersContainer"></div>
+
+</div>
+
+<script>
+// Initialize Supabase
+
+
+const menuBody = document.getElementById("menuBody");
+const addDishForm = document.getElementById("addDishForm");
+const ordersContainer = document.getElementById("ordersContainer");
+let dishes = [];
+
+// Fetch dishes
+async function fetchDishes(){
+    try{
+        const res = await fetch('/dishes/');
+        dishes = await res.json();
+        renderMenu();
+    }catch(err){ console.error(err); }
+}
+
+// Render table
+function renderMenu(){
+    menuBody.innerHTML = "";
+    dishes.forEach((dish,index)=>{
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><img src="${dish.photo}" alt="${dish.dishname}"></td>
+            <td>${dish.dishname}</td>
+            <td>
+                <input type="number" value="${dish.price}" onchange="updateDish(${index}, 'price', this.value)"> ₹ | 
+                <input type="number" value="${dish.quantity}" onchange="updateDish(${index}, 'quantity', this.value)">
+            </td>
+            <td>
+                <input type="checkbox" ${dish.available ? "checked" : ""} onchange="toggleAvailability(${index}, this.checked)">
+            </td>
+            <td>
+                <button class="delete-btn" onclick="deleteDish(${index})">Delete</button>
+            </td>
+        `;
+        menuBody.appendChild(row);
+    });
+}
+
+// Upload image to Supabase
+async function uploadImage(file){
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage.from('dish-photos').upload(fileName, file);
+    if(error){ console.error(error); return null; }
+    const { publicUrl } = supabase.storage.from('dish-photos').getPublicUrl(fileName);
+    return publicUrl;
+}
+
+// Add new dish
+addDishForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const file = document.getElementById("newPhoto").files[0];
+    const photoURL = await uploadImage(file);
+    if(!photoURL){ alert("Failed to upload image"); return; }
+
+    const newDish = {
+        dishname: document.getElementById("newName").value,
+        price: parseFloat(document.getElementById("newRate").value),
+        quantity: parseInt(document.getElementById("newQuantity").value),
+        available: document.getElementById("newAvailable").checked,
+        photo: photoURL
+    };
+
+    try{
+        const res = await fetch('/dishes/', {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify(newDish)
+        });
+        const createdDish = await res.json(); 
+        dishes.push(createdDish[0]); 
+        renderMenu();
+        addDishForm.reset();
+    }catch(err){ console.error(err); alert("Failed to add dish"); }
+});
+
+// Delete dish
+async function deleteDish(index){
+    const dishId = dishes[index].id;
+    if(confirm("Delete this dish?")){
+        try{
+            await fetch(`/dishes/${dishId}`, { method:"DELETE" });
+            dishes.splice(index,1);
+            renderMenu();
+        }catch(err){ console.error(err); }
+    }
+}
+
+// Update price/quantity
+async function updateDish(index, field, value){
+    const dish = dishes[index];
+    const payload = {};
+    if(field==="price") payload.price = parseFloat(value);
+    if(field==="quantity") payload.quantity = parseInt(value);
+
+    try{
+        await fetch(`/dishes/${dish.id}`, {
+            method:"PUT",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        });
+        dish[field] = payload[field];
+    }catch(err){ console.error(err); alert("Failed to update dish"); }
+}
+
+// Toggle availability
+async function toggleAvailability(index, value){
+    const dish = dishes[index];
+    try{
+        await fetch(`/dishes/${dish.id}`, {
+            method:"PUT",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ available: value })
+        });
+        dish.available = value;
+    }catch(err){ console.error(err); alert("Failed to update availability"); }
+}
+
+// View Orders
+async function viewOrders(){
+    try{
+        const res = await fetch('/orders/');
+        const orders = await res.json();
+        let html = "<h2>Orders</h2><table style='width:100%; margin-top:10px; background:#222; color:#fff;'><tr><th>Dish</th><th>Quantity</th><th>Status</th></tr>";
+        orders.forEach(o=>{
+            html += `<tr><td>${o.dishname}</td><td>${o.quantity}</td><td>${o.status ? o.status : "Pending"}</td></tr>`;
+        });
+        html += "</table>";
+        ordersContainer.innerHTML = html;
+        ordersContainer.scrollIntoView({behavior:"smooth"});
+    }catch(err){ console.error(err); alert("Failed to fetch orders"); }
+}
+
+window.onload = fetchDishes;
+</script>
+
+</body>
+</html>

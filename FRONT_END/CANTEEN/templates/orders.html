@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders with Backend</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    .order-button {
+      @apply flex items-center justify-between px-5 py-3 bg-white shadow-md rounded-xl hover:bg-gray-200 text-base font-medium transition duration-200;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-100 flex flex-col items-center py-6">
+  <h1 class="text-4xl font-bold mb-6">ORDERS</h1>
+
+  <div class="h-[400px] overflow-y-auto w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 mb-8" id="orderContainer"></div>
+
+  <div id="orderDetails" class="bg-white shadow-lg rounded-xl p-6 w-[90%] max-w-md hidden fade-in">
+    <h2 id="orderTitle" class="text-center text-xl font-bold mb-4 bg-gray-200 py-2 px-4 rounded-md"></h2>
+    <ul id="orderList" class="list-decimal list-inside text-gray-800 text-base leading-relaxed"></ul>
+  </div>
+
+  <script>
+    // 🔥 Firebase Setup
+    const firebaseConfig = {
+      // 🔁 Replace with your own config
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_DOMAIN",
+      databaseURL: "https://YOUR_ID.firebaseio.com",
+      projectId: "YOUR_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const container = document.getElementById('orderContainer');
+    const orderDetails = document.getElementById('orderDetails');
+    const orderTitle = document.getElementById('orderTitle');
+    const orderList = document.getElementById('orderList');
+
+    let clickTrack = {}; // To track first/second clicks
+
+    // Load Orders
+    function loadOrders() {
+      db.ref('orders').on('value', snapshot => {
+        const data = snapshot.val();
+        container.innerHTML = '';
+        clickTrack = {};
+
+        for (let id in data) {
+          const order = data[id];
+          const button = document.createElement('button');
+          button.className = 'order-button';
+          button.innerHTML = `${order.name} <span>➤</span>`;
+          button.onclick = () => handleClick(id, order);
+          container.appendChild(button);
+        }
+      });
+    }
+
+    function handleClick(orderId, order) {
+      if (!clickTrack[orderId]) {
+        // First click – show dishes
+        orderTitle.textContent = order.name;
+        orderList.innerHTML = '';
+        order.dishes.forEach(d => {
+          const li = document.createElement('li');
+          li.textContent = d;
+          orderList.appendChild(li);
+        });
+        orderDetails.classList.remove('hidden');
+        orderDetails.classList.add('fade-in');
+        clickTrack[orderId] = true;
+      } else {
+        // Second click – delete from Firebase
+        db.ref('orders/' + orderId).remove();
+        orderDetails.classList.add('hidden');
+        delete clickTrack[orderId];
+      }
+    }
+
+    // ✅ Initial dummy data loader (only once)
+    function seedDummyData() {
+      const orders = {};
+      for (let i = 1; i <= 10; i++) {
+        orders['order' + i] = {
+          name: `Order ${i} – AD`,
+          dishes: [`Dish A${i}`, `Dish B${i}`]
+        };
+      }
+      db.ref('orders').set(orders);
+    }
+
+    loadOrders();
+    // Uncomment this line to seed once
+    // seedDummyData();
+  </script>
+</body>
+</html>

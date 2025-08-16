@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Sign Up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('../static/assets/backround.jpg');
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .popup {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: black;
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      animation: popupIn 0.3s ease-in-out;
+      position: relative;
+      z-index: 10;
+    }
+    .glitter {
+      position: relative;
+      overflow: hidden;
+    }
+    .glitter::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 180%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.1) 100%);
+      animation: glitter 3s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+    @keyframes popupIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .shake {
+      animation: shake 0.3s;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+    /* Show password toggle styles */
+    .password-wrapper {
+      position: relative;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      -webkit-user-select: none;
+      font-size: 0.9rem;
+      color: #555;
+       -webkit-user-select: none; 
+  -moz-user-select: none;   
+  -ms-user-select: none;     
+  user-select: none;   
+    }
+
+    /* Success popup */
+    #success-popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4BB543;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #4BB543cc;
+      display: none;
+      z-index: 1000;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="popup glitter relative z-10" id="signup-box">
+    <h2 class="text-2xl text-center font-bold text-white bg-black px-6 py-2 rounded-full mb-6 w-fit mx-auto">
+      STUDENT SIGN UP PAGE
+    </h2>
+
+    <form class="space-y-4 text-lg font-semibold" onsubmit="signup(event)">
+      
+      <div>
+        <label for="name" class="block">NAME:</label>
+        <input type="text" id="name" name="name" placeholder="Your name" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black" />
+      </div>
+
+      <div>
+        <label for="department" class="block">DEPARTMENT:</label>
+        <select id="department" name="department" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black">
+          <option value="">Select Department</option>
+          <option value="CSE">CSE</option>
+          <option value="IT">IT</option>
+          <option value="ECE">ECE</option>
+          <option value="EEE">EEE</option>
+          <option value="MECH">Mechanical</option>
+          <option value="CIVIL">Civil</option>
+          <option value="AI&DS">AI&DS</option>
+          <option value="CYBER">CYBER</option>
+          <option value="AUTO">AUTO</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="year" class="block">YEAR:</label>
+        <select id="year" name="year" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black">
+          <option value="">Select Year</option>
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="regno" class="block">REGISTER NUMBER:</label>
+        <input type="text" id="regno" name="regno" placeholder="Your Register Number" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black" />
+      </div>
+
+      <div>
+        <label for="email" class="block">EMAIL:</label>
+        <input type="email" id="email" name="email" placeholder="Email" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black" />
+      </div>
+
+      <div class="password-wrapper">
+        <label for="password" class="block">PASSWORD:</label>
+        <input type="password" id="password" name="password" placeholder="Password" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black" />
+        <span class="toggle-password" onclick="togglePassword('password')">🔍</span>
+      </div>
+
+      <div class="password-wrapper">
+        <label for="confirm" class="block">CONFIRM PASSWORD:</label>
+        <input type="password" id="confirm" name="confirm" placeholder="Confirm password" required
+          class="w-full border border-black px-4 py-2 rounded-md text-black" />
+        <span class="toggle-password" onclick="togglePassword('confirm')">🔍</span>
+      </div>
+
+      <div class="bg-black rounded-full inline-block px-2 py-1">
+        <button type="submit" 
+          class="bg-black text-white px-8 py-2 rounded-full font-bold hover:bg-gray-800 transition duration-300">
+          SIGN UP
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div id="success-popup">Signup Successful!</div>
+
+<script>
+  function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    const toggle = input.nextElementSibling;
+    if (input.type === "password") {
+      input.type = "text";
+      toggle.textContent = "🔒";
+    } else {
+      input.type = "password";
+      toggle.textContent = "🔍";
+    }
+  }
+
+  async function signup(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const department = document.getElementById("department").value.trim();
+    const year = document.getElementById("year").value.trim();
+    const regno = document.getElementById("regno").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const confirm = document.getElementById("confirm").value.trim();
+
+    if (password !== confirm) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    const data = { name, department, year, regno, email, password };
+
+    try {
+      const response = await fetch("/student/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showSuccessPopup(result.message);
+        // After 2 seconds redirect
+        setTimeout(() => {
+          window.location.href = "/student/";
+        }, 2000);
+      } else {
+        alert(result.message);
+      }
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  }
+
+  function showSuccessPopup(message) {
+    const popup = document.getElementById('success-popup');
+    popup.textContent = message || "Signup Successful!";
+    popup.style.display = 'block';
+    setTimeout(() => {
+      popup.style.display = 'none';
+    }, 1800);
+  }
+</script>
+
+</body>
+</html>
