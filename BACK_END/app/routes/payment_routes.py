@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template
-from BACK_END.app.controllers.payment_controller import PaymentController
+from controllers.payment_controller import PaymentController
 
 payment_bp = Blueprint("payment", __name__)
 

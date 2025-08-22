@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
-from BACK_END.app.models.staff_model import  staff_id_exists, create_staff, get_staff_by_id
+from models.staff_model import  staff_id_exists, create_staff, get_staff_by_id
 import bcrypt
-from app.routes.staff_routes import staff_bp
+from routes.staff_routes import staff_bp
 
 @staff_bp.route('/signup', methods=['POST'])
 def staff_signuppage():
