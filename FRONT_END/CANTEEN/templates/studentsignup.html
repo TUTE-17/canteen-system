@@ -59,7 +59,6 @@
       75% { transform: translateX(-5px); }
       100% { transform: translateX(0); }
     }
-    /* Show password toggle styles */
     .password-wrapper {
       position: relative;
     }
@@ -77,8 +76,6 @@
   -ms-user-select: none;     
   user-select: none;   
     }
-
-    /* Success popup */
     #success-popup {
       position: fixed;
       top: 20px;
@@ -188,6 +185,12 @@
     }
   }
 
+  function validatePassword(password) {
+    // Regex: 1 lowercase, 1 uppercase, 1 number, 1 special char, min 8 chars
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~])[A-Za-z\d!@#$%^&*()_\-+=<>?{}[\]~]{8,}$/;
+    return regex.test(password);
+  }
+
   async function signup(event) {
     event.preventDefault();
 
@@ -204,6 +207,11 @@
       return;
     }
 
+    if (!validatePassword(password)) {
+      alert("Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.");
+      return;
+    }
+
     const data = { name, department, year, regno, email, password };
 
     try {
@@ -217,9 +225,8 @@
 
       if (result.success) {
         showSuccessPopup(result.message);
-        // After 2 seconds redirect
         setTimeout(() => {
-          window.location.href = "/student/";
+          window.location.href = "/student/login";
         }, 2000);
       } else {
         alert(result.message);

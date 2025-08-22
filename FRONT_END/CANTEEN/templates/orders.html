@@ -1,110 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Orders with Backend</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <style>
-    .order-button {
-      @apply flex items-center justify-between px-5 py-3 bg-white shadow-md rounded-xl hover:bg-gray-200 text-base font-medium transition duration-200;
-    }
-    .fade-in {
-      animation: fadeIn 0.3s ease-in-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders (Supabase)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    min-height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: flex-start; 
+    background: #f3f4f6; 
+    font-family: sans-serif;
+    padding: 20px;
+  }
+
+  .page-container {
+    width: 100%; 
+    max-width: 1200px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+  }
+
+  .header {
+    width: 100%;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #111;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .back-btn:hover {
+    background: #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .order-card { 
+    background: white; padding: 20px; border-radius: 14px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; 
+    transition: 0.2s; min-height: 160px; width: 280px;
+  }
+  .order-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .student-block { 
+    font-weight: bold; margin-bottom: 8px; background: #E5E7EB; 
+    padding: 10px; border-radius: 8px; display: flex; 
+    justify-content: space-between; align-items: center; 
+  }
+  .item-list { margin-top: 10px; display: none; list-style: disc; padding-left: 20px; }
+  .tick-btn { 
+    margin-top: 12px; padding: 8px 14px; background: #10B981; 
+    color: white; border-radius: 8px; cursor: pointer; 
+  }
+  .tick-btn:hover { background: #059669; }
+  .status { font-weight: 600; color: #1F2937; margin-left: 10px; }
+
+  
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+           display: flex; align-items: center; justify-content: center; }
+  .modal-content { background: white; padding: 20px; border-radius: 12px; 
+                   text-align: center; width: 320px; }
+  .modal-btn { margin: 10px; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+  .confirm { background: #EF4444; color: white; }
+  .confirm:hover { background: #DC2626; }
+  .cancel { background: #E5E7EB; }
+  .cancel:hover { background: #D1D5DB; }
+</style>
 </head>
-<body class="min-h-screen bg-gray-100 flex flex-col items-center py-6">
-  <h1 class="text-4xl font-bold mb-6">ORDERS</h1>
+<body>
 
-  <div class="h-[400px] overflow-y-auto w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 mb-8" id="orderContainer"></div>
-
-  <div id="orderDetails" class="bg-white shadow-lg rounded-xl p-6 w-[90%] max-w-md hidden fade-in">
-    <h2 id="orderTitle" class="text-center text-xl font-bold mb-4 bg-gray-200 py-2 px-4 rounded-md"></h2>
-    <ul id="orderList" class="list-decimal list-inside text-gray-800 text-base leading-relaxed"></ul>
+<div class="page-container">
+  
+  <div class="header">
+    <h1>ORDERS</h1>
+    <button class="back-btn" onclick="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back
+    </button>
   </div>
 
-  <script>
-    // 🔥 Firebase Setup
-    const firebaseConfig = {
-      // 🔁 Replace with your own config
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_DOMAIN",
-      databaseURL: "https://YOUR_ID.firebaseio.com",
-      projectId: "YOUR_ID",
-      storageBucket: "YOUR_BUCKET",
-      messagingSenderId: "YOUR_ID",
-      appId: "YOUR_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  
+  <div id="orderContainer" class="flex flex-wrap justify-center gap-6"></div>
+</div>
 
-    const container = document.getElementById('orderContainer');
-    const orderDetails = document.getElementById('orderDetails');
-    const orderTitle = document.getElementById('orderTitle');
-    const orderList = document.getElementById('orderList');
 
-    let clickTrack = {}; // To track first/second clicks
+<div id="confirmModal" class="modal hidden">
+  <div class="modal-content">
+    <h2 class="text-lg font-bold mb-4">Confirm Deletion</h2>
+    <p class="mb-4">Are you sure you want to delete this order?</p>
+    <button id="confirmYes" class="modal-btn confirm">Yes, Delete</button>
+    <button id="confirmNo" class="modal-btn cancel">Cancel</button>
+  </div>
+</div>
 
-    // Load Orders
-    function loadOrders() {
-      db.ref('orders').on('value', snapshot => {
-        const data = snapshot.val();
-        container.innerHTML = '';
-        clickTrack = {};
+<script>
+const container = document.getElementById('orderContainer');
+const modal = document.getElementById('confirmModal');
+const confirmYes = document.getElementById('confirmYes');
+const confirmNo = document.getElementById('confirmNo');
+let currentOrderId = null;
 
-        for (let id in data) {
-          const order = data[id];
-          const button = document.createElement('button');
-          button.className = 'order-button';
-          button.innerHTML = `${order.name} <span>➤</span>`;
-          button.onclick = () => handleClick(id, order);
-          container.appendChild(button);
-        }
+
+function goBack() { history.back(); }
+
+async function loadOrders() {
+  try {
+    const res = await fetch('/order/list');
+    const orders = await res.json();
+    container.innerHTML = '';
+
+    orders.forEach(order => {
+      const studentId = order.student?.reg_no || 'N/A';
+      const items = order.items || [];
+
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      card.innerHTML = `
+        <div class="student-block">
+          <span>Reg No: ${studentId}</span>
+          <span>Total: ₹${order.price}</span>
+        </div>
+        <div class="status">Status: ${order.status || 'Pending'}</div>
+        <ul class="item-list">
+          ${items.length > 0
+            ? items.map(i => `<li>${i.dishname} x${i.quantity} – ₹${i.price}</li>`).join('')
+            : '<li>No items found</li>'
+          }
+        </ul>
+        <button class="tick-btn">✓ Confirm Order</button>
+      `;
+
+      const itemList = card.querySelector('.item-list');
+      const tickBtn = card.querySelector('.tick-btn');
+
+      card.addEventListener('click', (e) => {
+        if(e.target !== tickBtn) itemList.style.display = itemList.style.display === 'block' ? 'none' : 'block';
       });
-    }
 
-    function handleClick(orderId, order) {
-      if (!clickTrack[orderId]) {
-        // First click – show dishes
-        orderTitle.textContent = order.name;
-        orderList.innerHTML = '';
-        order.dishes.forEach(d => {
-          const li = document.createElement('li');
-          li.textContent = d;
-          orderList.appendChild(li);
-        });
-        orderDetails.classList.remove('hidden');
-        orderDetails.classList.add('fade-in');
-        clickTrack[orderId] = true;
-      } else {
-        // Second click – delete from Firebase
-        db.ref('orders/' + orderId).remove();
-        orderDetails.classList.add('hidden');
-        delete clickTrack[orderId];
-      }
-    }
+      tickBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentOrderId = order.id;
+        modal.classList.remove('hidden');
+      });
 
-    // ✅ Initial dummy data loader (only once)
-    function seedDummyData() {
-      const orders = {};
-      for (let i = 1; i <= 10; i++) {
-        orders['order' + i] = {
-          name: `Order ${i} – AD`,
-          dishes: [`Dish A${i}`, `Dish B${i}`]
-        };
-      }
-      db.ref('orders').set(orders);
-    }
+      container.appendChild(card);
+    });
+  } catch(err) { console.error('Error loading orders:', err); }
+}
 
-    loadOrders();
-    // Uncomment this line to seed once
-    // seedDummyData();
-  </script>
+
+confirmYes.addEventListener('click', async () => {
+  if(currentOrderId) {
+    try {
+      const res = await fetch(`/order/delete/${currentOrderId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if(data.success) {
+        modal.classList.add('hidden');
+        loadOrders();
+      } else { alert('Failed to delete order'); }
+    } catch(err) { console.error(err); }
+  }
+});
+confirmNo.addEventListener('click', () => { modal.classList.add('hidden'); });
+
+
+loadOrders();
+</script>
 </body>
 </html>

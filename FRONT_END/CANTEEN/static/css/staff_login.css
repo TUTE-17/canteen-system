@@ -8,8 +8,8 @@ body {
 
 .container {
   display: flex;
-  justify-content: flex-end;  /* Move content to right */
-  align-items: center;        /* Vertically center */
+  justify-content: flex-end; 
+  align-items: center;        
   height: 100%;
   padding-right: 80px;
 }
@@ -49,10 +49,10 @@ body {
   font-weight: bold;
   text-align: center;
   margin-bottom: 20px;
-  background: linear-gradient(90deg, #00c6ff, #0072ff);           /* Standard property */
+  background: linear-gradient(90deg, #00c6ff, #0072ff);         
   -webkit-background-clip: text;
    background-clip: text;
-   color:black;         /* WebKit for Chrome, Safari */
+   color:black;         
   -webkit-text-fill-color: black;
   background-size: 200% auto;
   animation: titleShimmer 3s infinite ease-in-out;

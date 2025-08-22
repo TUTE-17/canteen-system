@@ -12,18 +12,17 @@ def create_staff(staff_data: dict):
     try:
         response = supabase.table('staff').insert(staff_data).execute()
         print("Insert response:", response)
-        # Check if response has error attribute
         if hasattr(response, 'error') and response.error:
             print("Supabase error:", response.error)
             raise Exception(response.error.message)
-        # Alternatively check status code
+    
         if hasattr(response, 'status_code') and response.status_code != 201:
             raise Exception(f"Insert failed with status code: {response.status_code}")
 
-        # Check data presence
+        
         if hasattr(response, 'data') and response.data:
             return response.data[0]
-        # Sometimes data is in 'json' attribute
+    
         elif hasattr(response, 'json') and 'data' in response.json():
             return response.json()['data'][0]
 

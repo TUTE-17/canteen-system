@@ -1,112 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Select Payment Method</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Page</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    
+    body {
+      background: url('../static/assets/normal bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
     }
 
-    .fade-in {
-      animation: fadeInUp 0.6s ease-out both;
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #amountDisplay {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+
+    #payBtn {
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      background-color: #3399cc;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #fff;
+      transition: 0.3s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    #payBtn:hover {
+      background-color: #287aa9;
+      transform: scale(1.05);
     }
   </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+<body>
+  <h1>Complete Your Payment</h1>
+  <p id="amountDisplay"></p>
+  <button id="payBtn">Pay Now</button>
 
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md fade-in" id="payment-box">
-    <!-- Header -->
-    <div class="bg-blue-500 text-white text-lg font-semibold px-4 py-2 rounded-t-lg mb-6 text-center">
-      Select Payment Method
-    </div>
-
-    <form id="paymentForm" class="space-y-4">
-      <!-- Google Pay -->
-      <label class="flex items-center justify-between bg-gray-100 p-4 rounded-md shadow-sm cursor-pointer hover:bg-gray-200 transition">
-        <div class="flex items-center space-x-4">
-          <img src="gpay logo.png" alt="Google Pay" class="w-8 h-8 rounded">
-          <span class="text-gray-800 font-medium">Google Pay</span>
-        </div>
-        <input type="radio" name="payment" value="Google Pay" class="form-radio text-blue-500">
-      </label>
-
-      <!-- Paytm -->
-      <label class="flex items-center justify-between bg-gray-100 p-4 rounded-md shadow-sm cursor-pointer hover:bg-gray-200 transition">
-        <div class="flex items-center space-x-4">
-          <img src="paytmlogo.png" alt="Paytm" class="w-8 h-8 rounded">
-          <span class="text-gray-800 font-medium">Paytm</span>
-        </div>
-        <input type="radio" name="payment" value="Paytm" class="form-radio text-blue-500">
-      </label>
-
-      <!-- PhonePe -->
-      <label class="flex items-center justify-between bg-gray-100 p-4 rounded-md shadow-sm cursor-pointer hover:bg-gray-200 transition">
-        <div class="flex items-center space-x-4">
-          <img src="phonepaylogo.png" alt="PhonePe" class="w-8 h-8 rounded">
-          <span class="text-gray-800 font-medium">PhonePe</span>
-        </div>
-        <input type="radio" name="payment" value="PhonePe" class="form-radio text-blue-500">
-      </label>
-
-      <!-- Divider -->
-      <div class="text-center my-4 text-gray-500 relative">
-        <span class="bg-white px-3 z-10 relative">or Scan QR</span>
-        <hr class="absolute top-1/2 w-full border-t border-gray-300 z-0 left-0">
-      </div>
-
-      <!-- UPI QR Code -->
-      <div class="flex justify-center">
-        <img src="prithiQR.png" alt="UPI QR Code" class="w-32 h-32 border border-gray-300 rounded-md shadow-sm">
-      </div>
-
-      <!-- Submit Button -->
-      <div class="pt-6 text-center">
-        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-          Proceed to Pay
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- JavaScript -->
   <script>
-    const form = document.getElementById("paymentForm");
-    const box = document.getElementById("payment-box");
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get("order_id");
+    const total = urlParams.get("total");
 
-    form.addEventListener("submit", function(e) {
-      e.preventDefault();
+    document.getElementById("amountDisplay").innerText = `Amount to be Paid: ₹${total}`;
 
-      const selected = document.querySelector('input[name="payment"]:checked');
-      if (!selected) {
-        alert("Please select a payment method.");
-        return;
+    document.getElementById("payBtn").onclick = async function() {
+      try {
+      
+        const response = await fetch("/payment/create", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ order_id: orderId, total: total })
+        });
+
+        if (!response.ok) throw new Error("Failed to create Razorpay order");
+
+        const orderData = await response.json();
+
+        var options = {
+          key: orderData.key_id,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "TUTE Canteen",
+          description: "Order Payment",
+          order_id: orderData.order_id,
+          handler: async function (response) {
+            
+            const verifyRes = await fetch(`/payment/verify?order_id=${orderId}`, {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const result = await verifyRes.json();
+
+            Swal.fire({
+              title: result.status === "success" ? "Payment Successful!" : "Payment Failed",
+              text: result.message,
+              icon: result.status === "success" ? "success" : "error",
+              confirmButtonText: "OK",
+              background: "#f0f8ff",
+              color: "#333"
+            }).then(() => {
+              if(result.status === "success"){
+                window.location.href = "/dishes/menu"; 
+              }
+            });
+          },
+          theme: { color: "#3399cc" }
+        };
+
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+
+      } catch (err) {
+        console.error("Error during payment:", err);
+        Swal.fire({
+          title: "Error",
+          text: "Payment initialization failed. Please try again.",
+          icon: "error",
+          confirmButtonText: "OK",
+          background: "#f0f8ff",
+          color: "#333"
+        });
       }
-
-      // Success animation
-      box.innerHTML = `
-        <div class="text-center">
-          <h2 class="text-green-600 text-2xl font-bold mb-4">✅ Payment Initiated</h2>
-          <p class="text-gray-700 mb-2">Method: <strong>${selected.value}</strong></p>
-          <p class="text-gray-500">Please complete the payment on your app.</p>
-        </div>
-      `;
-
-      // Optional redirect after a few seconds
-      setTimeout(() => {
-        // window.location.href = "thankyou.html"; // Uncomment to redirect
-      }, 3000);
-    });
+    }
   </script>
-
 </body>
 </html>

@@ -6,7 +6,6 @@
   <title>Staff Sign Up</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Glowing glitter effect */
     .glitter {
       position: relative;
       animation: glow 2s infinite alternate;
@@ -27,7 +26,6 @@
       }
     }
 
-    /* Popup animation */
     .popup {
       animation: popupIn 1s ease-out forwards;
       transform: scale(0.8);
@@ -44,7 +42,6 @@
       }
     }
 
-    /* Shake animation for invalid inputs */
     .shake {
       animation: shake 0.3s;
     }
@@ -59,136 +56,115 @@
   </style>
 </head>
 
-<body class="min-h-screen bg-cover bg-center flex items-center justify-center bg-[url('../static/assets/get_started.jpg')]">
+<body class="min-h-screen bg-cover bg-center flex items-center justify-center bg-[url('../static/assets/staff_signup.jpg')]">
 
   <div class="popup glitter relative bg-black p-8 rounded-xl w-full max-w-2xl z-10 overflow-hidden">
-    <!-- Title -->
     <h2 class="text-2xl text-center font-bold text-black bg-white px-6 py-2 rounded-full mb-6 w-fit mx-auto z-20">STAFF SIGN UP PAGE</h2>
-
-    <!-- Form -->
     <form id="signupForm" class="space-y-4 text-white font-semibold z-20 relative">
   
     <div>
     <label for="id" class="block text-white">STAFF ID:</label>
     <input type="text" id="id" name="id" placeholder="Enter your staff_id" class="w-full border border-black px-4 py-2 rounded-md bg-white text-black" required />
   </div>
-  <!-- NAME -->
   <div>
     <label for="name" class="block text-white">NAME:</label>
     <input type="text" id="name" name="name" placeholder="Enter your name" class="w-full border border-black px-4 py-2 rounded-md bg-white text-black" required />
   </div>
 
-  <!-- PHONE -->
+
   <div>
     <label for="phone" class="block text-white">PHONE:</label>
     <input type="tel" id="phone" name="phone" placeholder="Enter phone number" pattern="[0-9]{10}" maxlength="10" class="w-full border border-black px-4 py-2 rounded-md bg-white text-black" required />
   </div>
-
-  <!-- PASSWORD -->
   <div>
     <label for="password" class="block text-white">PASSWORD:</label>
     <input type="password" id="password" name="password" placeholder="Create a password" class="w-full border border-black px-4 py-2 rounded-md bg-white text-black" required />
   </div>
 
-  <!-- CONFIRM PASSWORD -->
   <div>
     <label for="confirmPassword" class="block text-white">CONFIRM PASSWORD:</label>
     <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" class="w-full border border-black px-4 py-2 rounded-md bg-white text-black" required />
   </div>
 
-  <!-- BUTTON -->
   <div class="text-center pt-4">
     <button type="submit" class="bg-white text-black px-6 py-2 rounded-full hover:bg-gray-800 hover:text-white transition duration-300">Sign Up</button>
   </div>
 </form>
 </div>
 
-  <!-- JavaScript -->
   <script>
-    const form = document.getElementById("signupForm");
+const form = document.getElementById("signupForm");
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const id= document.getElementById("id");
-      const phone = document.getElementById("phone");
-      const name = document.getElementById("name");
-      const password = document.getElementById("password");
-      const confirmPassword = document.getElementById("confirmPassword");
-
-      let valid = true;
-
-      // Reset previous shake
-      [id,name, phone, password, confirmPassword].forEach(input => {
-        input.classList.remove("shake");
-      });
-
-      // Check empty fields
-     if (id.value.trim() === "") {
-        id.classList.add("shake");
-        valid = false;
-      }
-      if (name.value.trim() === "") {
-        name.classList.add("shake");
-        valid = false;
-      }
-      if (phone.value.trim() === "") {
-        phone.classList.add("shake");
-        valid = false;
-      }
-      if (password.value.trim() === "") {
-        password.classList.add("shake");
-        valid = false;
-      }
-      if (confirmPassword.value.trim() === "") {
-        confirmPassword.classList.add("shake");
-        valid = false;
-      }
-
-      // Check password match
-      if (password.value !== confirmPassword.value) {
-        password.classList.add("shake");
-        confirmPassword.classList.add("shake");
-        alert("Passwords do not match!");
-        valid = false;
-      }
-
-      // If valid, show success
-      if (valid) {
-  fetch("/staff/signup", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      id: id.value.trim(),
-      name: name.value.trim(),
-      phone: phone.value.trim(),
-      password: password.value
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      alert("Error: " + data.error);
-    } else {
-      // Show success message
-      const container = document.querySelector(".popup");
-      container.innerHTML = `
-        <h2 class="text-2xl text-center text-white font-bold mb-4">🎉 Sign Up Successful!</h2>
-        <p class="text-center text-white text-lg">Welcome, <span class="font-bold">${data.staff.name}</span>!</p>
-      `;
-      container.classList.add("glitter");
-      setTimeout(() => {
-        window.location.href = "/staff/login";
-      }, 2000);
-    }
-  })
-  .catch(err => {
-    console.error("Signup error:", err);
-    alert(err);
-  });
+function validatePassword(password) {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~])[A-Za-z\d!@#$%^&*()_\-+=<>?{}[\]~]{8,}$/;
+  return regex.test(password);
 }
+
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  const id = document.getElementById("id");
+  const phone = document.getElementById("phone");
+  const name = document.getElementById("name");
+  const password = document.getElementById("password");
+  const confirmPassword = document.getElementById("confirmPassword");
+
+  let valid = true;
+
+  [id, name, phone, password, confirmPassword].forEach(input => {
+    input.classList.remove("shake");
+  });
+
+  if (id.value.trim() === "") { id.classList.add("shake"); valid = false; }
+  if (name.value.trim() === "") { name.classList.add("shake"); valid = false; }
+  if (phone.value.trim() === "") { phone.classList.add("shake"); valid = false; }
+  if (password.value.trim() === "") { password.classList.add("shake"); valid = false; }
+  if (confirmPassword.value.trim() === "") { confirmPassword.classList.add("shake"); valid = false; }
+
+  if (password.value !== confirmPassword.value) {
+    password.classList.add("shake");
+    confirmPassword.classList.add("shake");
+    alert("Passwords do not match!");
+    valid = false;
+  }
+
+  if (!validatePassword(password.value)) {
+    password.classList.add("shake");
+    alert("Password must be at least 8 characters and include uppercase, lowercase, number, and special character!");
+    valid = false;
+  }
+
+  if (valid) {
+    fetch("/staff/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: id.value.trim(),
+        name: name.value.trim(),
+        phone: phone.value.trim(),
+        password: password.value
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert("Error: " + data.error);
+      } else {
+        const container = document.querySelector(".popup");
+        container.innerHTML = `
+          <h2 class="text-2xl text-center text-white font-bold mb-4">🎉 Sign Up Successful!</h2>
+          <p class="text-center text-white text-lg">Welcome, <span class="font-bold">${data.staff.name}</span>!</p>
+        `;
+        container.classList.add("glitter");
+        setTimeout(() => { window.location.href = "/staff/login"; }, 2000);
+      }
+    })
+    .catch(err => {
+      console.error("Signup error:", err);
+      alert(err);
     });
-  </script>   
+  }
+});
+</script>
+
 </body>
 </html>

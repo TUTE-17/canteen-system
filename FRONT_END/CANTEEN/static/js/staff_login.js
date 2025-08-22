@@ -15,7 +15,7 @@ togglePassword.addEventListener("click", () => {
   const successMessage = document.getElementById('successMessage'); 
  
   loginBtn.addEventListener('click', function (e) { 
-    e.preventDefault(); // prevents actual form submission 
+    e.preventDefault(); 
     successMessage.style.display = 'block'; 
 }); 
 function login() { 

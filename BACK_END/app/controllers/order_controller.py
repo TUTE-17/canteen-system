@@ -1,41 +1,36 @@
-from flask import Blueprint, request, jsonify
-from models.order_model import DishModel
+from models.order_model import OrderModel
 
-dish_bp = Blueprint("dish_bp", __name__, url_prefix="/dishes")
+class OrderController:
+    @staticmethod
+    def create_new_order(data):
+        student_regno = data.get("student_regno")
+        items = data.get("items", [])
+        total = sum(item["quantity"] * item["price"] for item in items)
 
-@dish_bp.route("/", methods=["GET"])
-def get_dishes():
-    dishes = DishModel.get_all_dishes()
-    return jsonify(dishes), 200
+        
+        from supabase_init import supabase
+        student_check = supabase.table("students").select("*").eq("regno", student_regno).execute()
+        if not student_check.data:
+            return {"success": False, "message": "Invalid student regno"}
 
-@dish_bp.route("/<dish_id>", methods=["GET"])
-def get_dish(dish_id):
-    dish = DishModel.get_dish_by_id(dish_id)
-    if dish:
-        return jsonify(dish), 200
-    return jsonify({"error": "Dish not found"}), 404
+        order = OrderModel.create_order(student_regno, total)
+        if not order:
+            return {"success": False, "message": "Order creation failed"}
 
-@dish_bp.route("/", methods=["POST"])
-def create_dish():
-    data = request.json
-    photo = data.get("photo")
-    dishname = data.get("dishname")
-    quantity = data.get("quantity")
-    price = data.get("price")
+        order_id = order["id"]
+        for item in items:
+            OrderModel.add_order_item(order_id, item["dishname"], item["quantity"], item["price"])
 
-    if not dishname or quantity is None or price is None:
-        return jsonify({"error": "Missing required fields"}), 400
+        return {"success": True, "order_id": order_id}
 
-    new_dish = DishModel.create_dish(photo, dishname, quantity, price)
-    return jsonify(new_dish), 201
+    @staticmethod
+    def get_orders():
+        return OrderModel.get_orders()
 
-@dish_bp.route("/<dish_id>", methods=["PUT"])
-def update_dish(dish_id):
-    updates = request.json
-    updated = DishModel.update_dish(dish_id, updates)
-    return jsonify(updated), 200
+    @staticmethod
+    def delete_order(order_id):
+        result = OrderModel.delete_order(order_id)
+        if not result.data:
+         return {"success": False, "message": "Order not found"}
 
-@dish_bp.route("/<dish_id>", methods=["DELETE"])
-def delete_dish(dish_id):
-    deleted = DishModel.delete_dish(dish_id)
-    return jsonify(deleted), 200
+        return {"success": True, "message": "Order deleted successfully"}

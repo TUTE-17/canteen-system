@@ -162,7 +162,7 @@
         </tr>
     </thead>
     <tbody>
-        <!-- Rows added dynamically -->
+    
     </tbody>
 </table>
 
@@ -174,9 +174,8 @@
 <script>
 let total = 0;
 let allDishes = [];
-let selectedDishes = []; // store IDs of selected dishes
+let selectedDishes = []; 
 
-// Fetch dishes from backend
 async function fetchDishes() {
     try {
         const res = await fetch('/dishes/');
@@ -186,19 +185,20 @@ async function fetchDishes() {
     }
 }
 
-// Toggle popup
+
 function togglePopup(button) {
     const popup = button.parentElement.querySelector('.popup');
     popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
     renderDishList(popup);
 }
 
-// Render popup excluding already selected dishes
+
 function renderDishList(popup) {
     const ul = popup.querySelector('.dishList');
     ul.innerHTML = '';
     allDishes.forEach(dish => {
-        if (selectedDishes.includes(dish.id)) return; // skip selected
+        if (!dish.available) return; 
+        if (selectedDishes.includes(dish.id)) return; 
         const li = document.createElement('li');
         li.innerHTML = `
             <div style="display:flex; align-items:center; gap:5px;">
@@ -215,17 +215,14 @@ function renderDishList(popup) {
     });
 }
 
-// Select dish
-function selectDish(btn) {
-    const td = btn.closest('td');
-    const tr = btn.closest('tr');
 
+function selectDish(btn) {
+    const tr = btn.closest('tr');
     const dishId = btn.dataset.id;
     const name = btn.dataset.name;
     const photo = btn.dataset.photo;
     const price = Number(btn.dataset.price);
 
-    // Add to selected dishes
     selectedDishes.push(dishId);
 
     tr.querySelector('.photo').innerHTML = `<img src="${photo}">`;
@@ -241,14 +238,14 @@ function selectDish(btn) {
     qtyBtns[0].onclick = () => updateQty(tr, -1, price);
     qtyBtns[1].onclick = () => updateQty(tr, 1, price);
 
-    td.querySelector('.popup').style.display = 'none';
+    tr.querySelector('.popup').style.display = 'none';
     updateTotal();
 
     const tbody = document.getElementById('menuTable').querySelector('tbody');
     if (tbody.lastElementChild === tr) addEmptyRow();
 }
 
-// Update quantity and row price
+
 function updateQty(tr, change, price) {
     const span = tr.querySelector('.qty span');
     let qty = parseInt(span.innerText) + change;
@@ -258,7 +255,6 @@ function updateQty(tr, change, price) {
     updateTotal();
 }
 
-// Calculate total
 function updateTotal() {
     let totalPrice = 0;
     document.querySelectorAll('#menuTable tbody tr').forEach(tr => {
@@ -269,7 +265,6 @@ function updateTotal() {
     document.getElementById('totalPrice').innerText = total;
 }
 
-// Add empty row
 function addEmptyRow() {
     const tbody = document.getElementById('menuTable').querySelector('tbody');
     const row = tbody.insertRow();
@@ -289,12 +284,59 @@ function addEmptyRow() {
     row.querySelector('.change-btn').addEventListener('click', e => togglePopup(e.target));
 }
 
-// Proceed to pay
-function proceedToPay() {
-    alert("Proceeding to Payment. Total: ₹" + total);
+
+async function proceedToPay() {
+    if (total <= 0) {
+        alert("Please select at least one dish.");
+        return;
+    }
+
+    
+    const orderItems = [];
+    document.querySelectorAll('#menuTable tbody tr').forEach(tr => {
+        const dishName = tr.querySelector('.dish-name').innerText;
+        const qtyEl = tr.querySelector('.qty span');
+        const priceEl = tr.querySelector('.price');
+
+        if (dishName && qtyEl && priceEl) {
+            orderItems.push({
+                dish: dishName,
+                quantity: parseInt(qtyEl.innerText),
+                price: parseFloat(priceEl.innerText)
+            });
+        }
+    });
+
+    try {
+        
+        const STUDENT_REGNO = localStorage.getItem('student_regno');
+const res = await fetch('/order/create', {  
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+    student_regno: STUDENT_REGNO,
+    total: total,
+    items: orderItems.map(i => ({ dishname: i.dish, quantity: i.quantity, price: i.price }))
+})
+
+});
+
+        const data = await res.json();
+
+        if (data.success) {
+            window.location.href = `/payment/?order_id=${data.order_id}&total=${total}`;
+        } else {
+            alert("Error creating order: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert(err);
+        alert("Something went wrong while creating the order.");
+    }
 }
 
-// Initialize
+
+
 window.onload = async () => {
     await fetchDishes();
     addEmptyRow();

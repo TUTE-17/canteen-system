@@ -4,7 +4,7 @@ function togglePassword() {
 }
 
 document.querySelector("form").addEventListener("submit", function (e) {
-  e.preventDefault(); // prevent form's default submit
+  e.preventDefault(); 
 
   const identifier = document.getElementById("identifier").value;
   const password = document.getElementById("password").value;
@@ -17,19 +17,18 @@ document.querySelector("form").addEventListener("submit", function (e) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        // Save token if needed
-        localStorage.setItem("token", data.token);
-        // Redirect to menu page
+
+        localStorage.setItem('student_regno',data.student_regno);
         window.location.href = "/dishes/menu";
       } else {
-        // Wrong credentials -> trigger shake
+        
         const loginBox = document.querySelector(".login-box");
         loginBox.classList.add("shake");
         setTimeout(() => {
           loginBox.classList.remove("shake");
         }, 400);
 
-        alert(data.message); // optional: show reason
+        alert(data.message); 
       }
     })
     .catch(err => {

@@ -41,31 +41,31 @@
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-3 custom-body-bg">
-  <!-- Popup Container -->
+  
   <div class="bg-[#f5eaff] p-6 rounded-2xl glitter-popup shadow-xl w-[700px] max-w-full border-2 border-purple-500 flex ml-4">
 
-    <!-- Left Panel -->
+    
     <div class="bg-[#ffe4e1] p-6 rounded-xl flex flex-col items-center justify-center w-1/2 mr-4 outline outline-2 outline-black">
       <h2 class="text-2xl font-bold mb-6">GET STARTED</h2>
 
-      <!-- Student Button -->
+    
       <button id="studentBtn" class="flex items-center gap-2 bg-black text-white hover:bg-gray-800 px-4 py-3 rounded-full w-full justify-center mb-4 font-semibold shadow-md hover:shadow-lg transition duration-300">
         🎓 STUDENT 🧑
       </button>
 
-      <!-- Staff Button -->
+    
       <button id="staffBtn" class="flex items-center gap-2 bg-black text-white hover:bg-gray-800 px-4 py-3 rounded-full w-full justify-center font-semibold shadow-md hover:shadow-lg transition duration-300">
         👨‍🏫 STAFF 👩‍🏫
       </button>
     </div>
 
-    <!-- Right Side Image -->
+  
     <div class="bg-white p-4 rounded-xl shadow w-1/2 flex items-center justify-center">
       <img src="/static/assets/chef.jpg" alt="Chef" class="w-70" />
     </div>
   </div>
 
-  <!-- JavaScript -->
+  
   <script>
     document.getElementById("studentBtn").addEventListener("click", () => {
       window.location.href = "/student/login";
