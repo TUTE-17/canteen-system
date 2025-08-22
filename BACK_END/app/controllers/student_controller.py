@@ -1,8 +1,8 @@
 from flask import jsonify, request, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.student_model import  regno_or_email_exists, create_student,get_student_by_regno_or_email,update_student_password
-from routes.student_routes import stud_bp
-from utils.auth_utils import create_token
+from app.models.student_model import  regno_or_email_exists, create_student,get_student_by_regno_or_email,update_student_password
+from app.routes.student_routes import stud_bp
+from app.utils.auth_utils import create_token
 import secrets
 
 @stud_bp.route('/signup', methods=['POST'])

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
-from controllers.order_controller import OrderController
+from app.controllers.order_controller import OrderController
 
 order_bp = Blueprint("order", __name__, url_prefix="/order")
 

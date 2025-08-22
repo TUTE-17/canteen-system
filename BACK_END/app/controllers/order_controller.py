@@ -1,4 +1,4 @@
-from models.order_model import OrderModel
+from app.models.order_model import OrderModel
 
 class OrderController:
     @staticmethod

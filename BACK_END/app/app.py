@@ -1,15 +1,15 @@
 import os
 from flask import Flask, render_template
 
-from routes.student_routes import stud_bp
-from routes.staff_routes import staff_bp
-from routes.order_routes import order_bp
-from routes.payment_routes import payment_bp
-from routes.dish_routes import dish_bp
-from controllers import student_controller
-from controllers import staff_controller
-from controllers import order_controller
-from controllers import dish_controller
+from app.routes.student_routes import stud_bp
+from app.routes.staff_routes import staff_bp
+from app.routes.order_routes import order_bp
+from app.routes.payment_routes import payment_bp
+from app.routes.dish_routes import dish_bp
+from app.controllers import student_controller
+from app.controllers import staff_controller
+from app.controllers import order_controller
+from app.controllers import dish_controller
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, '../../FRONT_END/CANTEEN/templates')
 static_dir = os.path.join(base_dir, '../../FRONT_END/CANTEEN/static')

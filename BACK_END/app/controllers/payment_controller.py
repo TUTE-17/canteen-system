@@ -1,5 +1,5 @@
 import razorpay
-from models.payment_model import PaymentModel
+from app.models.payment_model import PaymentModel
 from config import RAZORPAY_KEY_ID, RAZORPAY_SECRET_KEY
 
 

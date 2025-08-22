@@ -1,6 +1,6 @@
 from flask import request, jsonify
-from models.dish_model import DishModel
-from routes.dish_routes import dish_bp
+from app.models.dish_model import DishModel
+from app.routes.dish_routes import dish_bp
 
 
 @dish_bp.route("/", methods=["GET"])
